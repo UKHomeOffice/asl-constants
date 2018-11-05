@@ -10,6 +10,7 @@ const procedureCodes = require('./constants/procedure-codes');
 const projectStatuses = require('./constants/project-statuses');
 const roles = require('./constants/roles');
 const suitabilityCodes = require('./constants/suitability-codes');
+const workflowStatuses = require('./constants/workflow-statuses');
 
 module.exports = {
   accreditingBodies,
@@ -23,5 +24,6 @@ module.exports = {
   procedureCodes,
   projectStatuses,
   roles,
-  suitabilityCodes
+  suitabilityCodes,
+  workflowStatuses
 };
