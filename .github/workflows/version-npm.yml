@@ -1,0 +1,65 @@
+name: 'Bump Version - npm'
+on:
+  pull_request:
+    types: [ labeled, unlabled, opened, reopened, synchronize ]
+
+jobs:
+  valid:
+    name: 'Check Valid Label'
+    if: contains(github.event.pull_request.labels.*.name, 'skip-release') == false
+    uses: UKHomeOffice/sas-github-workflows/.github/workflows/semver-check.yml@v1
+
+  update:
+    name: 'Update npm Version'
+    if: contains(github.event.pull_request.labels.*.name, 'skip-release') == false
+    needs: valid
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref }}
+
+      - name: Compare Branch And Main Versions
+        id: compare
+        run: |
+          file1=$(cat package.json)
+          file2=$(git show origin/master:package.json)
+          version1=$(echo $file1 | jq -r '.version')
+          version2=$(echo $file2 | jq -r '.version')
+          if [ "$version1" == "$version2" ]; then
+            echo "VERSION_MANUALLY_MODIFIED=false" >> ${GITHUB_ENV}
+          else
+            echo "VERSION_MANUALLY_MODIFIED=true" >> ${GITHUB_ENV}
+          fi
+        shell: bash
+
+      - name: Configure Git
+        if: env.VERSION_MANUALLY_MODIFIED == 'false'
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+        shell: bash
+
+      - name: Parse the SemVer label
+        if: env.VERSION_MANUALLY_MODIFIED == 'false'
+        id: label
+        uses: UKHomeOffice/match-label-action@v1
+        with:
+          labels: minor,major,patch
+          mode: singular
+
+      - name: Bump Release Version
+        if: env.VERSION_MANUALLY_MODIFIED == 'false'
+        run: echo "NEW_VERSION=$(npm --no-git-tag-version version ${{ steps.label.outputs.matchedLabels }})" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Commit package.json Change
+        if: env.VERSION_MANUALLY_MODIFIED == 'false'
+        run: |
+          git add "package.json"
+          git commit -m "Chore: Bump package version to ${{ env.NEW_VERSION }}"
+          git push --set-upstream origin ${{ github.head_ref }} --force
+        shell: bash
