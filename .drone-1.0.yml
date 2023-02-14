@@ -20,7 +20,7 @@ steps:
       NPM_AUTH_TOKEN:
         from_secret: npm_auth_token
     commands:
-      - npm test
+      - npm lint
   - name: publish
     image: node:18
     environment:

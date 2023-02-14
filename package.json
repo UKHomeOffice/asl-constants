@@ -4,8 +4,10 @@
   "description": "Shared constants for ASL modules",
   "main": "index.js",
   "scripts": {
-    "test": "npm run test:lint",
-    "test:lint": "eslint ."
+    "build": "exit 0",
+    "test": "exit 0",
+    "lint": "eslint .",
+    "audit": "npm audit"
   },
   "repository": {
     "type": "git",
