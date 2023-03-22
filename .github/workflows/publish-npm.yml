@@ -1,8 +1,5 @@
 name: 'Publish - npm'
-on:
-  pull_request:
-    types: [ closed ]
-  create:
+on: create
 
 jobs:
   publish:
